@@ -1,0 +1,664 @@
+import 'package:flutter/material.dart';
+import '../../../../models/user_model.dart';
+import '../../../../theme/app_colors.dart';
+import 'modals/transportation_project_hub_modal.dart';
+import 'modals/field_attendance_modal.dart';
+import 'modals/project_approval_modal.dart';
+import 'modals/site_risk_incident_modal.dart';
+import '../enterprise_solution/modals/reports_export_modal.dart';
+
+class ChiefRailwaysHomeTab extends StatelessWidget {
+  final UserModel user;
+  final Function(int)? onNavigateTab;
+
+  const ChiefRailwaysHomeTab({
+    super.key,
+    required this.user,
+    this.onNavigateTab,
+  });
+
+  void _openModal(BuildContext context, Widget modal) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: modal,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await Future.delayed(const Duration(milliseconds: 600));
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // A. Header Identitas
+            _buildExecutiveHeader(),
+            const SizedBox(height: 18),
+
+            // Top Cards (Statistik Cepat)
+            _buildTopStatsGrid(context),
+            const SizedBox(height: 20),
+
+            // Safety & HSE Status Banner
+            _buildHseBanner(context),
+            const SizedBox(height: 20),
+
+            // B. Grid Menu Utama (Middle Action Menu)
+            const Text(
+              'Menu Operasional Kereta & Transportasi',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildActionMenuGrid(context),
+            const SizedBox(height: 24),
+
+            // C. Visualisasi Data & Grafik
+            const Text(
+              'Milestone Proyek & Jam Kerja Site',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Pie Chart: Status Milestone Proyek Transportasi
+            _buildMilestonePieCard(),
+            const SizedBox(height: 16),
+
+            // Bar Chart: Akumulasi Jam Kerja Lapangan per Lokasi Project
+            _buildSiteWorkHoursBarCard(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExecutiveHeader() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0369A1), Color(0xFF0284C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0369A1).withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 26,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              child: const Text(
+                'PS',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade400,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'C-LEVEL EXECUTIVE',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF78350F),
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'AMI-006',
+                        style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  user.name.isNotEmpty ? user.name : 'Pirmadi Sukma',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Chief of Railways & Transportation',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFE0F2FE),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopStatsGrid(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                title: 'Status Proyek Kereta',
+                value: '5 Aktif',
+                subtitle: 'KAI, LRT, KCIC Halim',
+                icon: Icons.train_rounded,
+                iconColor: Colors.blue,
+                onTap: () => _openModal(context, const TransportationProjectHubModal()),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Tim Lapangan On-Site',
+                value: '32 Staf',
+                subtitle: 'Teknisi & SPM Sinyal',
+                icon: Icons.engineering_rounded,
+                iconColor: Colors.green,
+                onTap: () => _openModal(context, const FieldAttendanceModal()),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                title: 'Presensi & Lembur Site',
+                value: '94.8%',
+                subtitle: 'Presensi | 48 Jam Lembur',
+                icon: Icons.verified_user_rounded,
+                iconColor: Colors.teal,
+                onTap: () => _openModal(context, const FieldAttendanceModal()),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                title: 'Pengajuan Nota & Klaim',
+                value: '4 Berkas',
+                subtitle: 'SPPD & Nota Dinas Luar',
+                icon: Icons.assignment_turned_in_rounded,
+                iconColor: Colors.orange,
+                onTap: () => _openModal(context, const ProjectApprovalModal()),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.cardBorder),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHseBanner(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.security_rounded, color: Colors.green, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Zero Fatality & K3 Keselamatan Jalur Rel',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF166534)),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Seluruh personel mengenakan APD lengkap rompi K3 & sertifikasi safety perkeretaapian.',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF15803D)),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => _openModal(context, const SiteRiskIncidentModal()),
+            child: const Text('Log K3', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionMenuGrid(BuildContext context) {
+    final actions = [
+      {
+        'title': 'Transportation\nProject Hub',
+        'subtitle': 'Progress & Milestone',
+        'icon': Icons.train_rounded,
+        'color': Colors.blue,
+        'action': () => _openModal(context, const TransportationProjectHubModal()),
+      },
+      {
+        'title': 'Field\nAttendance',
+        'subtitle': 'GPS Track & Depo',
+        'icon': Icons.location_on_rounded,
+        'color': Colors.green,
+        'action': () => _openModal(context, const FieldAttendanceModal()),
+      },
+      {
+        'title': 'Project\nApproval',
+        'subtitle': 'Nota Dinas & SPPD',
+        'icon': Icons.assignment_turned_in_rounded,
+        'color': Colors.indigo,
+        'action': () => _openModal(context, const ProjectApprovalModal()),
+      },
+      {
+        'title': 'Site Risk &\nIncident Log',
+        'subtitle': 'Safety K3 & Kendala',
+        'icon': Icons.warning_amber_rounded,
+        'color': Colors.orange,
+        'action': () => _openModal(context, const SiteRiskIncidentModal()),
+      },
+      {
+        'title': 'Executive\nTimesheet',
+        'subtitle': 'Lembur Staf Site',
+        'icon': Icons.access_time_filled_rounded,
+        'color': Colors.purple,
+        'action': () {
+          if (onNavigateTab != null) onNavigateTab!(1);
+        },
+      },
+      {
+        'title': 'Reports\nExport',
+        'subtitle': 'PDF / Excel Proyek',
+        'icon': Icons.file_download_rounded,
+        'color': Colors.teal,
+        'action': () => _openModal(
+              context,
+              const ReportsExportModal(
+                entityName: 'PT Aman Media Interaktif',
+                chiefTitle: 'Chief of Railways & Transportation',
+              ),
+            ),
+      },
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: actions.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.95,
+      ),
+      itemBuilder: (context, index) {
+        final item = actions[index];
+        final MaterialColor color = item['color'] as MaterialColor;
+        return InkWell(
+          onTap: item['action'] as VoidCallback,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(item['icon'] as IconData, color: color[800], size: 22),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item['title'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    height: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item['subtitle'] as String,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 9, color: AppColors.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMilestonePieCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.pie_chart_rounded, color: Colors.blue, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Status Milestone Proyek Transportasi',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Persentase tahapan pengerjaan 5 proyek perkeretaapian aktif',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 16),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              height: 26,
+              child: Row(
+                children: [
+                  Expanded(flex: 50, child: Container(color: Colors.blue, alignment: Alignment.center, child: const Text('50%', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+                  Expanded(flex: 25, child: Container(color: Colors.purple, alignment: Alignment.center, child: const Text('25%', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+                  Expanded(flex: 15, child: Container(color: Colors.orange, alignment: Alignment.center, child: const Text('15%', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+                  Expanded(flex: 10, child: Container(color: Colors.green, alignment: Alignment.center, child: const Text('10%', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          _buildPieLegendItem('Implementation (Instalasi & Konstruksi)', '50% (Milestone Konstruksi)', Colors.blue),
+          const SizedBox(height: 8),
+          _buildPieLegendItem('Testing & Commissioning (Uji Fungsi)', '25% (Uji Interlocking)', Colors.purple),
+          const SizedBox(height: 8),
+          _buildPieLegendItem('Planning & Survey Lapangan', '15% (Survei Trase Jalur)', Colors.orange),
+          const SizedBox(height: 8),
+          _buildPieLegendItem('Handover & BAST Final Klien', '10% (Siap Operasi Resmi)', Colors.green),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPieLegendItem(String title, String val, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
+          ),
+        ),
+        Text(
+          val,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSiteWorkHoursBarCard() {
+    final siteData = [
+      {'site': 'St. Gambir', 'regular': 320, 'overtime': 45},
+      {'site': 'Depo Manggarai', 'regular': 440, 'overtime': 68},
+      {'site': 'LRT Cawang', 'regular': 280, 'overtime': 32},
+      {'site': 'KCIC Halim', 'regular': 360, 'overtime': 52},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.bar_chart_rounded, color: Color(0xFF0369A1), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Akumulasi Jam Kerja Lapangan per Lokasi',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Perbandingan total jam kerja reguler dan lembur teknisi per site',
+            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 18),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: siteData.map((data) {
+              final double regularHeight = ((data['regular'] as int) / 480) * 95;
+              final double overtimeHeight = ((data['overtime'] as int) / 80) * 45;
+
+              return Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 16,
+                        height: regularHeight,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0284C7),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        width: 14,
+                        height: overtimeHeight,
+                        decoration: const BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(4)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    data['site'] as String,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                  ),
+                  Text(
+                    '${data['regular']}j + ${data['overtime']}j',
+                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: const Color(0xFF0284C7), borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 4),
+              const Text('Jam Reguler', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+              const SizedBox(width: 16),
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 4),
+              const Text('Jam Lembur Lapangan', style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
