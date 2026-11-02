@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+  camera: ^0.12.2
+  camera_windows: ^0.3.0+1
 
 dev_dependencies:
   flutter_test:
@@ -24,9 +26,6 @@ flutter:
 
   assets:
     - asset/logo/
+    - asset/icons/
     - asset/image/
-    - assets/icons/
-    - assets/images/
-    - assets/images/logos/
-    - assets/images/profiles/
-    - assets/json/
+    - asset/json/

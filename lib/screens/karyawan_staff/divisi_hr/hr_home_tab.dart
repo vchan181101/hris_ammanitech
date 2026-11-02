@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../models/user_model.dart';
 import '../../../theme/app_colors.dart';
 import '../widgets/donut_chart_widget.dart';
-import '../widgets/bar_chart_widget.dart';
+import '../widgets/payroll_bpjs_overview_widget.dart';
+import '../widgets/employee_demographics_pie_widget.dart';
 import 'modals/validasi_kehadiran_modal.dart';
 import 'modals/database_karyawan_modal.dart';
 import 'modals/rekapitulasi_absensi_modal.dart';
@@ -24,39 +25,38 @@ class HrHomeTab extends StatefulWidget {
 }
 
 class _HrHomeTabState extends State<HrHomeTab> {
-  // 1. Diagram Lingkaran (Pie Chart) - Persentase Kehadiran Harian Seluruh Karyawan
+  // 1. Diagram Lingkaran (Pie/Donut Chart) - Visualisasi Kehadiran Real-Time Group (Hadir, Sakit, Izin, Terlambat, Cuti)
   final List<AttendanceDataItem> _dailyAttendanceStatus = const [
     AttendanceDataItem(
-      label: 'Hadir Tepat Waktu',
-      value: 121,
+      label: 'Hadir',
+      value: 275,
       percentage: 85,
-      color: AppColors.success,
+      color: Color(0xFF10B981), // Emerald Green
     ),
     AttendanceDataItem(
-      label: 'Terlambat Hadir',
-      value: 11,
-      percentage: 8,
-      color: AppColors.warning,
+      label: 'Sakit',
+      value: 10,
+      percentage: 3,
+      color: Color(0xFFEF4444), // Red
     ),
     AttendanceDataItem(
-      label: 'Cuti / Izin Resmi',
-      value: 7,
-      percentage: 5,
-      color: Color(0xFF0284C7),
+      label: 'Izin',
+      value: 12,
+      percentage: 4,
+      color: Color(0xFF0EA5E9), // Sky Blue
     ),
     AttendanceDataItem(
-      label: 'Alpa / Tanpa Ket.',
-      value: 3,
-      percentage: 2,
-      color: AppColors.error,
+      label: 'Terlambat',
+      value: 18,
+      percentage: 6,
+      color: Color(0xFFF59E0B), // Amber / Yellow
     ),
-  ];
-
-  // 2. Diagram Batang (Bar Chart) - Tren Keterlambatan per Divisi & Anak Perusahaan
-  final List<WeeklyWorkLog> _tardinessTrendPerDivision = const [
-    WeeklyWorkLog(weekLabel: 'PT AMI (Hold)', workHours: 2, overtimeHours: 0),
-    WeeklyWorkLog(weekLabel: 'PT GMT (IoT)', workHours: 5, overtimeHours: 1),
-    WeeklyWorkLog(weekLabel: 'PT HGT (Com)', workHours: 3, overtimeHours: 1),
+    AttendanceDataItem(
+      label: 'Cuti',
+      value: 10,
+      percentage: 3,
+      color: Color(0xFF8B5CF6), // Purple
+    ),
   ];
 
   void _openModal(Widget modalWidget) {
@@ -217,11 +217,11 @@ class _HrHomeTabState extends State<HrHomeTab> {
           ),
           const SizedBox(height: 20),
 
-          // A. Statistik Cepat (4 Top Cards)
+          // A. Ringkasan Operasional Hari Ini (5 Kolom dengan Desain Gambar 2 + Icon Logo)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Ringkasan Operasional Hari Ini',
@@ -231,56 +231,158 @@ class _HrHomeTabState extends State<HrHomeTab> {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricCard(
-                        title: 'Total Karyawan Aktif',
-                        value: '142',
-                        subtitle: 'Holding & Subsidiaries',
-                        icon: Icons.groups_rounded,
-                        color: const Color(0xFF7C3AED),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.swipe_left_rounded, size: 13, color: Color(0xFF7C3AED)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Geser',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF7C3AED),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildMetricCard(
-                        title: 'Pengajuan Cuti/Izin',
-                        value: '8 Pending',
-                        subtitle: 'Butuh Verifikasi',
-                        icon: Icons.pending_actions_rounded,
-                        color: AppColors.warning,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricCard(
-                        title: 'Terlambat / Absen',
-                        value: '5 T / 2 A',
-                        subtitle: 'Hari ini di seluruh grup',
-                        icon: Icons.alarm_off_rounded,
-                        color: AppColors.error,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildMetricCard(
-                        title: 'Kontrak Hampir Habis',
-                        value: '3 Kontrak',
-                        subtitle: 'Expiry Alert (<30 Hari)',
-                        icon: Icons.hourglass_bottom_rounded,
-                        color: const Color(0xFFD97706),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth >= 1050) {
+                // Wide Desktop: 5 Kolom sejajar proporsional
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildOperationalCard(
+                          title: 'Karyawan',
+                          value: '325',
+                          subtitle: 'Holding & Subsidiaries',
+                          iconName: 'karyawan',
+                          accentColor: const Color(0xFF2563EB),
+                          onTap: () => _openModal(const DatabaseKaryawanModal()),
+                          isResponsive: true,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildOperationalCard(
+                          title: 'Departemen',
+                          value: '12 Dept',
+                          subtitle: '6 Divisi Grup',
+                          iconName: 'departemen',
+                          accentColor: const Color(0xFF0EA5E9),
+                          onTap: () => _showDepartemenModal(context),
+                          isResponsive: true,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildOperationalCard(
+                          title: 'Total Payroll',
+                          value: 'Rp 2,45 M',
+                          subtitle: 'Gaji Bulan Berjalan',
+                          iconName: 'payroll',
+                          accentColor: const Color(0xFF10B981),
+                          onTap: () => _showPayrollModal(context),
+                          isResponsive: true,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildOperationalCard(
+                          title: 'BPJS',
+                          value: 'Rp 187,35 Jt',
+                          subtitle: 'Kesehatan & Naker',
+                          iconName: 'bpjs',
+                          accentColor: const Color(0xFFF59E0B),
+                          onTap: () => _showBpjsModal(context),
+                          isResponsive: true,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildOperationalCard(
+                          title: 'Total PPH 21',
+                          value: 'Rp 245,18 Jt',
+                          subtitle: 'Pajak Penghasilan',
+                          iconName: 'pajak',
+                          accentColor: const Color(0xFFDB2777),
+                          onTap: () => _showPph21Modal(context),
+                          isResponsive: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Mobile / Standard Window: Horizontal Scrollable Row (Sesuai Gambar 2)
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    _buildOperationalCard(
+                      title: 'Karyawan',
+                      value: '325',
+                      subtitle: 'Holding & Subsidiaries',
+                      iconName: 'karyawan',
+                      accentColor: const Color(0xFF2563EB),
+                      onTap: () => _openModal(const DatabaseKaryawanModal()),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildOperationalCard(
+                      title: 'Departemen',
+                      value: '12 Dept',
+                      subtitle: '6 Divisi Grup',
+                      iconName: 'departemen',
+                      accentColor: const Color(0xFF0EA5E9),
+                      onTap: () => _showDepartemenModal(context),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildOperationalCard(
+                      title: 'Total Payroll',
+                      value: 'Rp 2,45 M',
+                      subtitle: 'Gaji Bulan Berjalan',
+                      iconName: 'payroll',
+                      accentColor: const Color(0xFF10B981),
+                      onTap: () => _showPayrollModal(context),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildOperationalCard(
+                      title: 'BPJS',
+                      value: 'Rp 187,35 Jt',
+                      subtitle: 'Kesehatan & Naker',
+                      iconName: 'bpjs',
+                      accentColor: const Color(0xFFF59E0B),
+                      onTap: () => _showBpjsModal(context),
+                    ),
+                    const SizedBox(width: 12),
+                    _buildOperationalCard(
+                      title: 'Total PPH 21',
+                      value: 'Rp 245,18 Jt',
+                      subtitle: 'Pajak Penghasilan',
+                      iconName: 'pajak',
+                      accentColor: const Color(0xFFDB2777),
+                      onTap: () => _showPph21Modal(context),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           const SizedBox(height: 24),
 
@@ -397,74 +499,60 @@ class _HrHomeTabState extends State<HrHomeTab> {
                 ),
                 const SizedBox(height: 12),
 
-                // 1. Diagram Lingkaran - Persentase Kehadiran Harian Seluruh Karyawan
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.cardBorder),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.pie_chart_rounded, color: Color(0xFF7C3AED), size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Persentase Kehadiran Real-Time Group',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      AttendanceDonutChartWidget(data: _dailyAttendanceStatus),
-                    ],
-                  ),
+                // 1. Diagram Lingkaran - Visualisasi Kehadiran Real-Time Group (Hadir, Sakit, Izin, Terlambat, Cuti)
+                AttendanceDonutChartWidget(
+                  title: 'Visualisasi Kehadiran Real-Time Group',
+                  subtitle: 'Monitoring Kehadiran Seluruh Karyawan Group',
+                  centerValue: '325',
+                  centerUnit: 'Karyawan',
+                  rateBadge: 'Rate: 85%',
+                  headerIcon: Icons.groups_rounded,
+                  headerColor: const Color(0xFF7C3AED),
+                  data: _dailyAttendanceStatus,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                // 2. Diagram Batang - Tren Keterlambatan per Divisi (Holding, GMT, HGT)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.cardBorder),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                // 2. Overview Payroll & BPJS (Gambar 2: Payroll Bar Chart + BPJS Donut Chart)
+                const PayrollBpjsOverviewWidget(),
+                const SizedBox(height: 20),
+
+                // 3. Demografi Karyawan (Gambar 3: Gender, Age Group, Education, Type Status dari Live Database)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Demografi & Komposisi Karyawan',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.bar_chart_rounded, color: Color(0xFFD97706), size: 20),
-                          SizedBox(width: 8),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.sync_rounded, size: 12, color: Color(0xFF2563EB)),
+                          SizedBox(width: 4),
                           Text(
-                            'Tren Keterlambatan per Entitas / Divisi',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            'Live Database',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2563EB),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      WorkOvertimeBarChartWidget(weeklyLogs: _tardinessTrendPerDivision),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 12),
+                const EmployeeDemographicsPieWidget(),
               ],
             ),
           ),
@@ -474,63 +562,556 @@ class _HrHomeTabState extends State<HrHomeTab> {
     );
   }
 
-  Widget _buildMetricCard({
+  Widget _buildOperationalCard({
     required String title,
     required String value,
     required String subtitle,
-    required IconData icon,
-    required Color color,
+    required String iconName,
+    required Color accentColor,
+    VoidCallback? onTap,
+    bool isResponsive = false,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+        child: Container(
+          width: isResponsive ? null : 210,
+          height: 86,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              Icon(icon, color: color, size: 20),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Left vertical indicator bar (matching Gambar 2)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              // Content inside card
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 12, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF64748B),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            value,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: accentColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Icon Logo (lib/icons / asset/icons)
+                    Container(
+                      width: 36,
+                      height: 36,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: _buildCardIcon(iconName, accentColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardIcon(String iconName, Color color) {
+    return Image.asset(
+      'asset/icons/icon_$iconName.png',
+      width: 26,
+      height: 26,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'asset/icons/$iconName.png',
+          width: 26,
+          height: 26,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Image.asset(
+              'lib/icons/$iconName.png',
+              width: 26,
+              height: 26,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.circle, color: color, size: 22);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showDepartemenModal(BuildContext context) {
+    final depts = [
+      {'name': 'Human Resources & GA', 'comp': 'PT AMI (Holding)', 'count': '18 Karyawan', 'color': const Color(0xFF7C3AED)},
+      {'name': 'Finance & Accounting', 'comp': 'PT AMI (Holding)', 'count': '14 Karyawan', 'color': const Color(0xFF059669)},
+      {'name': 'Executive Board & Legal', 'comp': 'PT AMI (Holding)', 'count': '6 Karyawan', 'color': const Color(0xFF0F4C81)},
+      {'name': 'IoT & Hardware Engineering', 'comp': 'PT GMT', 'count': '42 Karyawan', 'color': const Color(0xFF0284C7)},
+      {'name': 'AI & Data Solutions', 'comp': 'PT GMT', 'count': '38 Karyawan', 'color': const Color(0xFF2563EB)},
+      {'name': 'Civil Works & Field Ops', 'comp': 'PT GMT', 'count': '65 Karyawan', 'color': const Color(0xFFD97706)},
+      {'name': 'Enterprise Customer Account', 'comp': 'PT GMT', 'count': '22 Karyawan', 'color': const Color(0xFF4F46E5)},
+      {'name': 'Digital Marketing & Ads', 'comp': 'PT HGT', 'count': '35 Karyawan', 'color': const Color(0xFFEC4899)},
+      {'name': 'Media & Production', 'comp': 'PT HGT', 'count': '28 Karyawan', 'color': const Color(0xFF8B5CF6)},
+      {'name': 'Content Talents & Creator', 'comp': 'PT HGT', 'count': '32 Karyawan', 'color': const Color(0xFFF43F5E)},
+      {'name': 'Software Development', 'comp': 'PT HGT', 'count': '15 Karyawan', 'color': const Color(0xFF10B981)},
+      {'name': 'Logistics & Support', 'comp': 'Holding & Sub', 'count': '10 Karyawan', 'color': const Color(0xFF64748B)},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0EA5E9).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _buildCardIcon('departemen', const Color(0xFF0EA5E9)),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '12 Departemen & Divisi',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        'Struktur Organisasi AMANI Tech Group',
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                itemCount: depts.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 10),
+                itemBuilder: (context, idx) {
+                  final d = depts[idx];
+                  final c = d['color'] as Color;
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: c.withValues(alpha: 0.15),
+                          child: Text(
+                            '${idx + 1}',
+                            style: TextStyle(color: c, fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d['name'] as String,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                              Text(
+                                d['comp'] as String,
+                                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: c.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            d['count'] as String,
+                            style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPayrollModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _buildCardIcon('payroll', const Color(0xFF10B981)),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ringkasan Total Payroll',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        'Periode Berjalan AMANI Tech Group',
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Total Pengeluaran Gaji:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Rp 2.450.000.000', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildDetailRow('Gaji Pokok & Tunjangan Tetap', 'Rp 1.850.000.000'),
+            _buildDetailRow('Tunjangan Lembur & Operasional', 'Rp 260.000.000'),
+            _buildDetailRow('Insentif & Bonus Kinerja', 'Rp 340.000.000'),
+            _buildDetailRow('Total Karyawan Terbayar', '325 Karyawan'),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBpjsModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _buildCardIcon('bpjs', const Color(0xFFF59E0B)),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ringkasan Iuran BPJS',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        'BPJS Ketenagakerjaan & Kesehatan',
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Total Iuran BPJS:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Rp 187.350.000', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildDetailRow('BPJS Ketenagakerjaan (JKK, JKM, JHT, JP)', 'Rp 112.500.000'),
+            _buildDetailRow('BPJS Kesehatan (4% Perusahaan, 1% Karyawan)', 'Rp 74.850.000'),
+            _buildDetailRow('Total Tenaga Kerja Terdaftar', '325 Peserta Aktif'),
+            _buildDetailRow('Status Sinkronisasi SIPP & Edabu', 'Tervalidasi 100%'),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPph21Modal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDB2777).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: _buildCardIcon('pajak', const Color(0xFFDB2777)),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ringkasan Total PPH 21',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        'Pajak Penghasilan Karyawan Group',
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDF2F8),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFBCFE8)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Total Setoran PPh 21:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  Text('Rp 245.180.000', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFFBE185D))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildDetailRow('PPh 21 Karyawan Tetap (PKWTT)', 'Rp 185.600.000'),
+            _buildDetailRow('PPh 21 Karyawan Kontrak & PKWT', 'Rp 42.180.000'),
+            _buildDetailRow('PPh 21 Tenaga Ahli / Konsultan', 'Rp 17.400.000'),
+            _buildDetailRow('Status e-Billing DJP', 'Kode Billing Diterbitkan'),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
-          const SizedBox(height: 2),
           Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 10,
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            value,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
           ),
         ],
       ),

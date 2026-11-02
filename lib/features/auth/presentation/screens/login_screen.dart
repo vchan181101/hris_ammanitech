@@ -3,6 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../data/datasources/mock_user_data.dart';
 import '../../data/models/user_model.dart';
 import '../widgets/auth_header_widget.dart';
+import '../widgets/forgot_password_modal.dart';
 import '../../../navigation/presentation/screens/main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -190,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () => ForgotPasswordModal.show(context),
                             child: const Text('Lupa Sandi?', style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.bold)),
                           ),
                         ],

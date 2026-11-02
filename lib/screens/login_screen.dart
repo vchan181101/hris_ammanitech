@@ -8,6 +8,7 @@ import 'karyawan_staff/divisi_hr/hr_staff_main_screen.dart';
 import 'karyawan_staff/divisi_hr/hr_head_main_screen.dart';
 import 'chief/chief_main_screen.dart';
 import 'direktur/direktur_main_screen.dart';
+import '../features/auth/presentation/widgets/forgot_password_modal.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -126,44 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showForgotPasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: const [
-            Icon(Icons.help_outline_rounded, color: AppColors.primary),
-            SizedBox(width: 10),
-            Text('Lupa Kata Sandi?', style: TextStyle(fontSize: 18)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Silakan hubungi tim IT Support atau Administrator HR & GA (Djoko Kiswantoro / Mia Aulia) untuk melakukan reset akun Anda.',
-              style: TextStyle(color: AppColors.textSecondary, height: 1.4),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Email: hrd@amanitech.com\nTelepon/WA: +62 812-3456-7890',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+    ForgotPasswordModal.show(context);
   }
 
   void _handleBiometricLogin() {

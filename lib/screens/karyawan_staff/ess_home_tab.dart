@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import 'presensi_camera_screen.dart';
 import '../../theme/app_colors.dart';
 import 'widgets/donut_chart_widget.dart';
 import 'widgets/bar_chart_widget.dart';
@@ -20,9 +22,112 @@ class EssHomeTab extends StatefulWidget {
 }
 
 class _EssHomeTabState extends State<EssHomeTab> {
-  bool _isClockedIn = true;
-  String _clockInTime = '08:30 WIB';
+  bool _isClockedIn = false;
+  String _clockInTime = '--:-- WIB';
   String _clockOutTime = '--:-- WIB';
+  bool _isLate = false;
+  bool _isQuickExit = false;
+
+  Timer? _tickerTimer;
+  late String _currentLiveDate;
+  late String _currentLiveTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateLiveDateTime();
+    _tickerTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _updateLiveDateTime();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tickerTimer?.cancel();
+    super.dispose();
+  }
+
+  void _updateLiveDateTime() {
+    final now = DateTime.now();
+    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const months = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    final dayName = days[now.weekday - 1];
+    final day = now.day.toString().padLeft(2, '0');
+    final monthName = months[now.month - 1];
+    final year = now.year;
+    _currentLiveDate = '$dayName, $day $monthName $year';
+
+    final h = now.hour.toString().padLeft(2, '0');
+    final m = now.minute.toString().padLeft(2, '0');
+    final s = now.second.toString().padLeft(2, '0');
+    _currentLiveTime = '$h : $m : $s WIB';
+  }
+
+  String _formatFormattedTime(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    final s = dt.second.toString().padLeft(2, '0');
+    return '$h:$m:$s WIB';
+  }
+
+  Widget _buildStatusBadge() {
+    String label;
+    Color badgeColor;
+
+    if (!_isClockedIn && _clockInTime.contains('--')) {
+      label = 'NCI';
+      badgeColor = const Color(0xFF2563EB); // Biru NCI
+    } else if (_isClockedIn) {
+      if (_isLate) {
+        label = 'Late';
+        badgeColor = const Color(0xFFEF4444); // Merah Late
+      } else {
+        label = 'On-Time';
+        badgeColor = const Color(0xFF22C55E); // Hijau On-Time
+      }
+    } else {
+      if (_isQuickExit) {
+        label = 'Quick Exit';
+        badgeColor = const Color(0xFFEF4444); // Merah Quick Exit
+      } else {
+        label = 'Selesai';
+        badgeColor = const Color(0xFF22C55E); // Hijau Selesai
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Color _getJamMasukColor() {
+    if (_clockInTime.contains('--')) return Colors.white;
+    return _isLate ? const Color(0xFFEF4444) : const Color(0xFF4ADE80);
+  }
+
+  Color _getJamKeluarColor() {
+    if (_clockOutTime.contains('--')) return Colors.white;
+    return _isQuickExit ? const Color(0xFFEF4444) : const Color(0xFF4ADE80);
+  }
 
   // Sample data for Donut Chart (Rekap Kehadiran Saya)
   final List<AttendanceDataItem> _attendanceData = const [
@@ -267,7 +372,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
                 gradient: LinearGradient(
                   colors: _isClockedIn
                       ? [const Color(0xFF0F4C81), const Color(0xFF0284C7)]
-                      : [const Color(0xFF475569), const Color(0xFF334155)],
+                      : [const Color(0xFF334155), const Color(0xFF1E293B)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -293,40 +398,38 @@ class _EssHomeTabState extends State<EssHomeTab> {
                               color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              _isClockedIn ? Icons.access_time_filled : Icons.access_time,
+                            child: const Icon(
+                              Icons.access_time_filled,
                               color: Colors.white,
                               size: 16,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            _isClockedIn
-                                ? 'Status: Sudah Jam Kerja (Hadir)'
-                                : 'Status: Belum Presensi Clock In',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentLiveDate,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _currentLiveTime,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _isClockedIn ? Colors.lightGreenAccent : Colors.orangeAccent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _isClockedIn ? 'Hadir Tepat Waktu' : 'Belum Masuk',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                      _buildStatusBadge(),
                     ],
                   ),
                   const Divider(color: Colors.white24, height: 20),
@@ -343,8 +446,8 @@ class _EssHomeTabState extends State<EssHomeTab> {
                           const SizedBox(height: 2),
                           Text(
                             _clockInTime,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: _getJamMasukColor(),
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -366,8 +469,8 @@ class _EssHomeTabState extends State<EssHomeTab> {
                           const SizedBox(height: 2),
                           Text(
                             _clockOutTime,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: _getJamKeluarColor(),
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -375,32 +478,70 @@ class _EssHomeTabState extends State<EssHomeTab> {
                         ],
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          _openModal(
-                            ClockInOutModal(
-                              user: widget.user,
-                              isClockedIn: _isClockedIn,
-                              onStatusChanged: (newStatus) {
-                                setState(() {
-                                  _isClockedIn = newStatus;
-                                  if (!newStatus) {
-                                    _clockOutTime = '17:30 WIB';
-                                  } else {
-                                    _clockOutTime = '--:-- WIB';
-                                  }
-                                });
-                              },
+                        onPressed: () async {
+                          final newStatus = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PresensiCameraScreen(
+                                user: widget.user,
+                                isClockedIn: _isClockedIn,
+                              ),
+                            ),
+                          );
+
+                          if (newStatus == null || !mounted || !context.mounted) return;
+
+                          setState(() {
+                            _isClockedIn = newStatus;
+                            final now = DateTime.now();
+                            final timeStr = _formatFormattedTime(now);
+
+                            if (newStatus) {
+                              _clockInTime = timeStr;
+                              _clockOutTime = '--:-- WIB';
+                              _isLate = (now.hour > 9) || (now.hour == 9 && (now.minute > 0 || now.second > 0));
+                            } else {
+                              _clockOutTime = timeStr;
+                              _isQuickExit = now.hour < 17;
+                            }
+                          });
+
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      newStatus
+                                          ? 'Berhasil Clock In! Selamat bekerja.'
+                                          : 'Berhasil Clock Out! Selamat beristirahat.',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
                           );
                         },
                         icon: Icon(
                           _isClockedIn ? Icons.logout : Icons.login,
                           size: 16,
+                          color: _isClockedIn ? AppColors.error : const Color(0xFF2563EB),
                         ),
-                        label: Text(_isClockedIn ? 'Clock Out' : 'Clock In'),
+                        label: Text(
+                          _isClockedIn ? 'Clock Out' : 'Clock In',
+                          style: TextStyle(
+                            color: _isClockedIn ? AppColors.error : const Color(0xFF2563EB),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          foregroundColor: _isClockedIn ? AppColors.error : AppColors.primary,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -412,30 +553,53 @@ class _EssHomeTabState extends State<EssHomeTab> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Real-time GPS Geofence Badge
+                  // Real-time GPS Geofence Badge with refresh icon
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.my_location_rounded,
                           color: Colors.greenAccent,
                           size: 16,
                         ),
-                        SizedBox(width: 8),
-                        Expanded(
+                        const SizedBox(width: 8),
+                        const Expanded(
                           child: Text(
-                            'Lokasi GPS: Cyber 2 Tower - Akurasi 5m (In Geofence Zone)',
+                            'Lokasi GPS: Cyber 2 Tower, Kuningan - Akurasi 3m (In Geofence Zone - Stabil)',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 16),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Row(
+                                  children: [
+                                    Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('Posisi GPS diperbarui & stabil.'),
+                                  ],
+                                ),
+                                duration: const Duration(seconds: 1),
+                                backgroundColor: AppColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

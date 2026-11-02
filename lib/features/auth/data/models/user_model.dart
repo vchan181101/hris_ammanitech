@@ -12,5 +12,9 @@ class UserModel extends UserEntity {
     required super.company,
     required super.department,
     required super.role,
+    super.gender = 'Male',
+    super.ageGroup = '31-40',
+    super.education = 'S1',
+    super.employmentType = 'TETAP',
   });
 }

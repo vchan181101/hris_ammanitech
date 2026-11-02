@@ -4,8 +4,8 @@ import '../../../theme/app_colors.dart';
 
 class AttendanceDataItem {
   final String label;
-  final double value; // Hari
-  final double percentage; // %
+  final double value;
+  final double percentage;
   final Color color;
 
   const AttendanceDataItem({
@@ -18,15 +18,30 @@ class AttendanceDataItem {
 
 class AttendanceDonutChartWidget extends StatelessWidget {
   final List<AttendanceDataItem> data;
+  final String title;
+  final String subtitle;
+  final String? centerValue;
+  final String centerUnit;
+  final String? rateBadge;
+  final IconData headerIcon;
+  final Color headerColor;
 
   const AttendanceDonutChartWidget({
     super.key,
     required this.data,
+    this.title = 'Rekap Kehadiran Saya',
+    this.subtitle = 'Bulan Maret 2025',
+    this.centerValue,
+    this.centerUnit = 'Hari Kerja',
+    this.rateBadge = 'Rate: 90%',
+    this.headerIcon = Icons.pie_chart_rounded,
+    this.headerColor = AppColors.primary,
   });
 
   @override
   Widget build(BuildContext context) {
     final double totalDays = data.fold(0, (sum, item) => sum + item.value);
+    final displayCenter = centerValue ?? '${totalDays.toInt()}';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -48,99 +63,110 @@ class AttendanceDonutChartWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.pie_chart_rounded,
-                      color: AppColors.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Rekap Kehadiran Saya',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Bulan Maret 2025',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.accentLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
+              Expanded(
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.verified_user_outlined,
-                      size: 14,
-                      color: AppColors.primary,
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: headerColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        headerIcon,
+                        color: headerColor,
+                        size: 20,
+                      ),
                     ),
-                    SizedBox(width: 4),
-                    Text(
-                      'Rate: 90%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            subtitle,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
+              if (rateBadge != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: headerColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.verified_user_outlined,
+                        size: 14,
+                        color: headerColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        rateBadge!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: headerColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           // Donut Chart Canvas & Center Text
           Row(
             children: [
               // Custom Donut Canvas
               SizedBox(
-                width: 140,
-                height: 140,
+                width: 130,
+                height: 130,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     CustomPaint(
-                      size: const Size(140, 140),
+                      size: const Size(130, 130),
                       painter: DonutChartPainter(data: data),
                     ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '${totalDays.toInt()}',
+                          displayCenter,
                           style: const TextStyle(
-                            fontSize: 24,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const Text(
-                          'Hari Kerja',
-                          style: TextStyle(
+                        Text(
+                          centerUnit,
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
@@ -151,18 +177,18 @@ class AttendanceDonutChartWidget extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               // Legend List Side
               Expanded(
                 child: Column(
                   children: data.map((item) {
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 3.5),
                       child: Row(
                         children: [
                           Container(
-                            width: 12,
-                            height: 12,
+                            width: 10,
+                            height: 10,
                             decoration: BoxDecoration(
                               color: item.color,
                               shape: BoxShape.circle,
@@ -181,7 +207,7 @@ class AttendanceDonutChartWidget extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${item.value.toInt()} hari (${item.percentage.toInt()}%)',
+                            '${item.value.toInt()} (${item.percentage.toInt()}%)',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -214,7 +240,7 @@ class DonutChartPainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     final outerRadius = min(size.width, size.height) / 2;
-    final strokeWidth = 24.0;
+    const strokeWidth = 22.0;
     final rect = Rect.fromCircle(center: center, radius: outerRadius - strokeWidth / 2);
 
     double startAngle = -pi / 2;
