@@ -1,4 +1,4 @@
-import '../models/user_model.dart';
+import '../../../../models/user_model.dart';
 
 class MockUserData {
   static const String defaultPassword = 'password123';
