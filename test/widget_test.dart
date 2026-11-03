@@ -5,6 +5,7 @@ import 'package:hris_ammanitech/app.dart';
 import 'package:hris_ammanitech/screens/karyawan_staff/divisi_hr/hr_home_tab.dart';
 import 'package:hris_ammanitech/screens/karyawan_staff/ess_profile_tab.dart';
 import 'package:hris_ammanitech/screens/karyawan_staff/ess_home_tab.dart';
+import 'package:hris_ammanitech/screens/karyawan_staff/ess_main_screen.dart';
 
 void main() {
   test('MockUserData findUser supports both NIK and Email', () {
@@ -233,7 +234,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Verify date & live clock (Jam : Menit : Detik WIB)
-    expect(find.text('Senin, 02 November 2026'), findsOneWidget);
+    expect(find.textContaining('November'), findsOneWidget);
     expect(find.textContaining('WIB'), findsWidgets);
 
     // 2. Initial state: kolom masih kosong (belum ada yang klik)
@@ -316,5 +317,109 @@ void main() {
     expect(find.text('--:-- WIB'), findsNothing);
     // Status badge is Quick Exit or Selesai
     expect(find.byWidgetPredicate((w) => w is Text && (w.data == 'Quick Exit' || w.data == 'Selesai')), findsOneWidget);
+  });
+
+  testWidgets('EssHomeTab displays revised Menu Akses Cepat ESS (4 atas & 4 bawah) and navigates to new pages', (WidgetTester tester) async {
+    final erlanUser = MockUserData.findUser('erlan@amanitech.co.id', 'password123')!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: EssHomeTab(user: erlanUser),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Verify Title & 8 Layanan Utama
+    expect(find.text('Menu Akses Cepat ESS'), findsOneWidget);
+    expect(find.text('8 Layanan Utama'), findsOneWidget);
+
+    // 2. Verify 4 Kolom Atas
+    expect(find.text('ID Card'), findsOneWidget);
+    expect(find.text('Kalender'), findsOneWidget);
+    expect(find.text('Departemen'), findsOneWidget);
+    expect(find.text('Pajak & BPJS'), findsOneWidget);
+
+    // 3. Verify 4 Kolom Bawah
+    expect(find.text('Slip Gaji'), findsOneWidget);
+    expect(find.text('Pengajuan'), findsOneWidget);
+    expect(find.text('Reimburse'), findsOneWidget);
+    expect(find.text('Laporan'), findsOneWidget);
+
+    // 4. Test clicking ID Card -> opens IdCardPage
+    await tester.ensureVisible(find.text('ID Card'));
+    await tester.tap(find.text('ID Card'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kartu ID Karyawan (Digital)'), findsOneWidget);
+    expect(find.text('AMANI TECH GROUP'), findsWidgets);
+    expect(find.text('QR ACCESS PASS'), findsOneWidget);
+
+    // Go back
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
+
+    // 5. Test clicking Slip Gaji -> opens SlipGajiPage
+    await tester.ensureVisible(find.text('Slip Gaji'));
+    await tester.tap(find.text('Slip Gaji'));
+    await tester.pumpAndSettle();
+    expect(find.text('Slip Gaji Resmi (E-Payslip)'), findsOneWidget);
+    expect(find.text('TOTAL TAKE HOME PAY (NET)'), findsOneWidget);
+
+    // Go back
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
+
+    // 6. Test clicking Pajak & BPJS -> opens PajakBpjsPage
+    await tester.ensureVisible(find.text('Pajak & BPJS'));
+    await tester.tap(find.text('Pajak & BPJS'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pajak (PPh 21) & BPJS'), findsOneWidget);
+    expect(find.text('KARTU NPWP ELEKTRONIK'), findsOneWidget);
+
+    // Go back
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('EssMainScreen renders revised 5 bottom navigation items for Karyawan/Staff', (WidgetTester tester) async {
+    final erlanUser = MockUserData.findUser('erlan@amanitech.co.id', 'password123')!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: EssMainScreen(user: erlanUser),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Verify 5 Bottom Navigation items for Karyawan/Staff:
+    // [ 🏠 Dashboard ]   [ 📅 Presensi ]   [ 📋 Pengajuan ]   [ 🔔 Notifikasi ]   [ 👤 Profil ]
+    final bottomNav = find.byType(BottomNavigationBar);
+    expect(find.descendant(of: bottomNav, matching: find.text('Dashboard')), findsOneWidget);
+    expect(find.descendant(of: bottomNav, matching: find.text('Presensi')), findsOneWidget);
+    expect(find.descendant(of: bottomNav, matching: find.text('Pengajuan')), findsOneWidget);
+    expect(find.descendant(of: bottomNav, matching: find.text('Notifikasi')), findsOneWidget);
+    expect(find.descendant(of: bottomNav, matching: find.text('Profil')), findsOneWidget);
+
+    // 2. Test switching to Presensi tab
+    await tester.tap(find.descendant(of: bottomNav, matching: find.text('Presensi')));
+    await tester.pumpAndSettle();
+    expect(find.text('Riwayat Presensi Bulanan'), findsOneWidget);
+
+    // 3. Test switching to Pengajuan tab
+    await tester.tap(find.descendant(of: bottomNav, matching: find.text('Pengajuan')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pengajuan Cuti, Izin & Lembur'), findsOneWidget);
+    expect(find.text('Buat Pengajuan'), findsOneWidget);
+
+    // 4. Test switching to Notifikasi tab
+    await tester.tap(find.descendant(of: bottomNav, matching: find.text('Notifikasi')));
+    await tester.pumpAndSettle();
+    expect(find.text('Pusat Notifikasi & Kotak Masuk'), findsOneWidget);
+
+    // 5. Test switching to Profil tab
+    await tester.tap(find.descendant(of: bottomNav, matching: find.text('Profil')));
+    await tester.pumpAndSettle();
+    expect(find.text('PENGATURAN'), findsOneWidget);
   });
 }

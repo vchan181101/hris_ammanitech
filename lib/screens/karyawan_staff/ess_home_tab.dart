@@ -2,15 +2,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import 'presensi_camera_screen.dart';
+import 'pages/id_card_page.dart';
+import 'pages/kalender_page.dart';
+import 'pages/departemen_page.dart';
+import 'pages/pajak_bpjs_page.dart';
+import 'pages/slip_gaji_page.dart';
+import 'pages/pengajuan_page.dart';
+import 'pages/reimburse_page.dart';
+import 'pages/laporan_page.dart';
 import '../../theme/app_colors.dart';
 import 'widgets/donut_chart_widget.dart';
 import 'widgets/bar_chart_widget.dart';
-import 'modals/clock_in_out_modal.dart';
-import 'modals/cuti_izin_modal.dart';
-import 'modals/reimbursement_modal.dart';
-import 'modals/payslip_modal.dart';
-import 'modals/log_aktivitas_modal.dart';
-import 'modals/jadwal_shift_modal.dart';
+
 
 class EssHomeTab extends StatefulWidget {
   final UserModel user;
@@ -165,14 +168,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
     WeeklyWorkLog(weekLabel: 'Minggu 4', workHours: 40, overtimeHours: 6),
   ];
 
-  void _openModal(Widget modalWidget) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => modalWidget,
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -611,7 +607,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
 
           const SizedBox(height: 24),
 
-          // 1B. Grid Menu Cepat (Middle Action Menu)
+          // 1B. Grid Menu Cepat (Middle Action Menu - 4 Kolom Atas & 4 Kolom Bawah)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -629,7 +625,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
                       ),
                     ),
                     Text(
-                      '6 Layanan Utama',
+                      '8 Layanan Utama',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -642,78 +638,124 @@ class _EssHomeTabState extends State<EssHomeTab> {
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 14,
-                  crossAxisSpacing: 14,
-                  childAspectRatio: 1.05,
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 0.82,
                   children: [
+                    // 4 Kolom Atas: ID Card, Kalender, Departemen, Pajak & BPJS
                     _buildGridMenuItem(
-                      title: 'Clock In / Out',
-                      subtitle: 'Selfie & GPS',
-                      icon: Icons.touch_app_rounded,
+                      title: 'ID Card',
+                      subtitle: 'Digital Pass',
+                      icon: Icons.badge_rounded,
                       color: const Color(0xFF0F4C81),
                       onTap: () {
-                        _openModal(
-                          ClockInOutModal(
-                            user: widget.user,
-                            isClockedIn: _isClockedIn,
-                            onStatusChanged: (newStatus) {
-                              setState(() {
-                                _isClockedIn = newStatus;
-                                if (!newStatus) {
-                                  _clockOutTime = '17:30 WIB';
-                                } else {
-                                  _clockOutTime = '--:-- WIB';
-                                }
-                              });
-                            },
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IdCardPage(user: widget.user),
                           ),
                         );
                       },
                     ),
                     _buildGridMenuItem(
-                      title: 'Pengajuan Cuti/Izin',
-                      subtitle: 'Form Tahunan/Sakit',
-                      icon: Icons.event_note_rounded,
+                      title: 'Kalender',
+                      subtitle: 'Jadwal Kerja',
+                      icon: Icons.calendar_month_rounded,
                       color: const Color(0xFF0284C7),
                       onTap: () {
-                        _openModal(const CutiIzinModal());
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => KalenderPage(user: widget.user),
+                          ),
+                        );
                       },
                     ),
                     _buildGridMenuItem(
-                      title: 'Klaim Reimburse',
-                      subtitle: 'Nota & Struk',
+                      title: 'Departemen',
+                      subtitle: 'Divisi & Tim',
+                      icon: Icons.corporate_fare_rounded,
+                      color: const Color(0xFF0D9488),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DepartemenPage(user: widget.user),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildGridMenuItem(
+                      title: 'Pajak & BPJS',
+                      subtitle: 'PPh 21 & KIS',
+                      icon: Icons.account_balance_rounded,
+                      color: const Color(0xFF7C3AED),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PajakBpjsPage(user: widget.user),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // 4 Kolom Bawah: Slip Gaji, Pengajuan, Reimburse, Laporan
+                    _buildGridMenuItem(
+                      title: 'Slip Gaji',
+                      subtitle: 'Take Home Pay',
                       icon: Icons.receipt_long_rounded,
                       color: const Color(0xFF059669),
                       onTap: () {
-                        _openModal(const ReimbursementModal());
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SlipGajiPage(user: widget.user),
+                          ),
+                        );
                       },
                     ),
                     _buildGridMenuItem(
-                      title: 'Slip Gaji (Payslip)',
-                      subtitle: 'Secure PIN/Biometrik',
-                      icon: Icons.account_balance_wallet_rounded,
-                      color: const Color(0xFF7C3AED),
+                      title: 'Pengajuan',
+                      subtitle: 'Cuti & Izin',
+                      icon: Icons.edit_calendar_rounded,
+                      color: const Color(0xFFEA580C),
                       onTap: () {
-                        _openModal(PayslipModal(user: widget.user));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PengajuanPage(user: widget.user),
+                          ),
+                        );
                       },
                     ),
                     _buildGridMenuItem(
-                      title: 'Log Aktivitas / Task',
-                      subtitle: 'IoT/AI/CS/Civil',
-                      icon: Icons.task_alt_rounded,
+                      title: 'Reimburse',
+                      subtitle: 'Klaim Biaya',
+                      icon: Icons.payments_rounded,
                       color: const Color(0xFFD97706),
                       onTap: () {
-                        _openModal(LogAktivitasModal(user: widget.user));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReimbursePage(user: widget.user),
+                          ),
+                        );
                       },
                     ),
                     _buildGridMenuItem(
-                      title: 'Jadwal & Shift',
-                      subtitle: 'Kalender Kerja',
-                      icon: Icons.calendar_month_rounded,
-                      color: const Color(0xFFDC2626),
+                      title: 'Laporan',
+                      subtitle: 'Rekap Kinerja',
+                      icon: Icons.assessment_rounded,
+                      color: const Color(0xFFE11D48),
                       onTap: () {
-                        _openModal(JadwalShiftModal(user: widget.user));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LaporanPage(user: widget.user),
+                          ),
+                        );
                       },
                     ),
                   ],
@@ -766,17 +808,17 @@ class _EssHomeTabState extends State<EssHomeTab> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
           border: Border.all(color: AppColors.cardBorder),
@@ -785,19 +827,19 @@ class _EssHomeTabState extends State<EssHomeTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
@@ -809,7 +851,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
               subtitle,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 9,
+                fontSize: 8,
                 color: AppColors.textSecondary,
               ),
               maxLines: 1,

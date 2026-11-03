@@ -31,13 +31,13 @@ class BottomNavBar extends StatelessWidget {
         backgroundColor: Colors.white,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
-        selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+        selectedLabelStyle: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w500),
         elevation: 0,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard_rounded),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_rounded),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
@@ -46,14 +46,14 @@ class BottomNavBar extends StatelessWidget {
             label: 'Presensi',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.verified_outlined),
-            activeIcon: Icon(Icons.verified_rounded),
-            label: 'Approval',
+            icon: Icon(Icons.assignment_outlined),
+            activeIcon: Icon(Icons.assignment_rounded),
+            label: 'Pengajuan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inbox_outlined),
-            activeIcon: Icon(Icons.inbox_rounded),
-            label: 'Inbox',
+            icon: Icon(Icons.notifications_outlined),
+            activeIcon: Icon(Icons.notifications_rounded),
+            label: 'Notifikasi',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline_rounded),

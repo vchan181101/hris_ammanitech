@@ -13,6 +13,7 @@ import 'package:hris_ammanitech/screens/karyawan_staff/divisi_hr/hr_head_main_sc
 import 'package:hris_ammanitech/screens/karyawan_staff/ess_attendance_tab.dart';
 import 'package:hris_ammanitech/screens/karyawan_staff/ess_inbox_tab.dart';
 import 'package:hris_ammanitech/screens/karyawan_staff/ess_profile_tab.dart';
+import 'package:hris_ammanitech/screens/karyawan_staff/pages/pengajuan_page.dart';
 import '../../../approval/presentation/screens/approval_center_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
 
@@ -71,10 +72,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       return HrHeadMainScreen(user: widget.user);
     }
 
+    final role = widget.user.role.toLowerCase();
+    final isStaff = !role.contains('manager') && !role.contains('head') && !role.contains('direktur') && !role.contains('chief') && !role.contains('c-level');
+
     final List<Widget> tabs = [
       _buildRoleDashboard(),
       EssAttendanceTab(user: widget.user),
-      ApprovalCenterScreen(user: widget.user),
+      isStaff ? PengajuanPage(user: widget.user, isTab: true) : ApprovalCenterScreen(user: widget.user),
       EssInboxTab(user: widget.user),
       EssProfileTab(user: widget.user),
     ];
