@@ -13,6 +13,7 @@ import 'pages/laporan_page.dart';
 import '../../theme/app_colors.dart';
 import 'widgets/donut_chart_widget.dart';
 import 'widgets/bar_chart_widget.dart';
+import 'services/attendance_history_service.dart';
 
 
 class EssHomeTab extends StatefulWidget {
@@ -481,6 +482,7 @@ class _EssHomeTabState extends State<EssHomeTab> {
                               builder: (context) => PresensiCameraScreen(
                                 user: widget.user,
                                 isClockedIn: _isClockedIn,
+                                clockInTime: _clockInTime,
                               ),
                             ),
                           );
@@ -496,9 +498,22 @@ class _EssHomeTabState extends State<EssHomeTab> {
                               _clockInTime = timeStr;
                               _clockOutTime = '--:-- WIB';
                               _isLate = (now.hour > 9) || (now.hour == 9 && (now.minute > 0 || now.second > 0));
+                              AttendanceHistoryService().recordClockIn(
+                                dateTime: now,
+                                timeStr: timeStr,
+                                location: 'Cyber 2 Tower (HQ)',
+                                isLate: _isLate,
+                              );
                             } else {
                               _clockOutTime = timeStr;
                               _isQuickExit = now.hour < 17;
+                              AttendanceHistoryService().recordClockOut(
+                                dateTime: now,
+                                timeStr: timeStr,
+                                durationStr: '9 Jam 02 Mnt',
+                                location: 'Cyber 2 Tower (HQ)',
+                                isQuickExit: _isQuickExit,
+                              );
                             }
                           });
 

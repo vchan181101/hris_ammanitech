@@ -16,4 +16,6 @@ class CurrencyFormatter {
     final String reversed = buffer.toString().split('').reversed.join('');
     return 'Rp $reversed';
   }
+
+  static String formatRupiah(double amount) => formatIdr(amount);
 }

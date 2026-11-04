@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../data/mock_users.dart';
+import '../../../../features/auth/data/datasources/mock_users.dart';
 import '../../../../models/user_model.dart';
 import '../../../../theme/app_colors.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'features/auth/presentation/screens/splash_screen.dart';
+import 'app/config/app_theme.dart';
+import 'app/config/app_routes.dart';
 
 class HrisApp extends StatelessWidget {
   const HrisApp({super.key});
@@ -11,7 +11,8 @@ class HrisApp extends StatelessWidget {
       title: 'HRIS AMMANI Tech Group',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const SplashScreen(),
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

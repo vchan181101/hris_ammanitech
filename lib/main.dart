@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'app.dart';
+import 'app/bindings/initial_binding.dart';
 
 List<CameraDescription> cameras = [];
 
@@ -16,6 +17,9 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('Kamera belum terhubung / platform channel: $e');
   }
+
+  // Inisialisasi awal layanan core aplikasi
+  await InitialBinding.init();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

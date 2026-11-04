@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/mock_users.dart';
+import '../features/auth/data/datasources/mock_users.dart';
 import '../theme/app_colors.dart';
 import 'karyawan_staff/ess_main_screen.dart';
 import 'karyawan_staff/divisi_finance/finance_staff_main_screen.dart';
